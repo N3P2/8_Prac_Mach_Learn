@@ -1,19 +1,16 @@
 ---
 title: "Prac_Mach_Learn_2"
 author: "N3P2"
-date: "6 October 2015"
-output: pdf_document
+date: "16 October 2015"
+output: html_document
 ---
 
 ## Introduction  
 Using health tracking devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it.  
 
-In this project, we will use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants to predict the manner in which they did the exercise.  
+Data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants were used to predict the manner in which they did the exercise.  
 
 ## Data Preprocessing  
-```{r, results='hide'}
-setwd("C:/Users/Qingyuan/Documents/8_Prac_Mach_Learn")
-```
 
 ```{r}
 library(caret)
@@ -35,8 +32,7 @@ download.file(test.cases.url,test.cases.file)
 ```  
 
 ### Data read
-After downloading the data from the data source, we can read the two csv files into two data frames.  
-
+Loading the data and reading the data sets on 2 frames
 
 ```{r}
 trainRaw <- read.csv("pml-training.csv")
@@ -48,8 +44,8 @@ The *training data set* contains **19622 observations and 160 variables**, while
 
 ### Data cleaning
 ## Cleaning Data
-First all blank('""'), '#DIV/0' and 'NA' values are converted to 'NA'.
-Any Columns containing 'NA' are removed from both downloaded data sets.
+All blank('""'), '#DIV/0' and 'NA' values are converted to 'NA'.
+Columns containing 'NA' were removed from both data sets.
 ```{r}
 training.df   <-read.csv("pml-training.csv", na.strings=c("NA","#DIV/0!", ""))
 test.cases.df <-read.csv("pml-test.csv" , na.strings=c("NA", "#DIV/0!", ""))
@@ -71,7 +67,7 @@ test.cases.df <-test.cases.df[,-c(1:7)]
 Now, the cleaned training data set contains **19622 observations and 53 variables**, while the testing data set contains **20 observations and 53 variables**. The "classe" variable is still in the cleaned training set.
 
 ### Slice the data
-Then, we can split the cleaned training set into a pure training data set (70%) and a validation data set (30%). We will use the validation data set to conduct cross validation in future steps.  
+Cleaned training set was split into a pure training data set (70%) and a validation data set (30%). Validation data set was used to conduct cross validation.  
 ```{r}
 set.seed(22519) # For reproducibile purpose
 
@@ -81,13 +77,14 @@ testData  <- training.df[-inTrain, ]
 ```
 
 ## Data Modeling
-We fit a predictive model for activity recognition using **Random Forest** algorithm because it automatically selects important variables and is robust to correlated covariates & outliers in general. We will use **5-fold cross validation** when applying the algorithm.  
+A predictive model was fitted for activity recognition using **Random Forest** algorithm due to automatic selection of important variables and robustness to correlated covariates & outliers in general.  **5-fold cross validation** will be used when applying the algorithm.
 ```{r}
 controlRf <- trainControl(method="cv", 5)
 modelRf <- train(classe ~ ., data=trainData, method="rf", trControl=controlRf, ntree=250)
 modelRf
 ```
-Then, we estimate the performance of the model on the validation data set.  
+Using *confusion matrix* to test the performance of the model on the validation data set.  
+
 ```{r}
 predictRf <- predict(modelRf, testData)
 confusionMatrix(testData$classe, predictRf)
@@ -96,19 +93,19 @@ confusionMatrix(testData$classe, predictRf)
 ```{r}
 accuracy <- postResample(predictRf, testData$classe)
 accuracy
-oose <- 1 - as.numeric(confusionMatrix(testData$classe, predictRf)$overall[1])
-oose
-```
-So, the estimated accuracy of the model is 99.42% and the estimated out-of-sample error is 0.58%.
 
-## Predicting for Test Data Set
-Now, we apply the model to the original testing data set downloaded from the data source. We remove the `problem_id` column first.  
+error.rate <- 1 - as.numeric(confusionMatrix(testData$classe, predictRf)$overall[1])
+error.rate
+```
+So, the *estimated accuracy* of the model is **99.42%** and the estimated *out-of-sample error* is **0.58%**.
+
+## Test Data Set Prediction
 ```{r}
 result <- predict(modelRf, test.cases.df[, -length(names(test.cases.df))])
 result
 ```  
 
-## Appendix: Figures
+## Figures
 1. Correlation Matrix Visualization  
 ```{r}
 corrPlot <- cor(trainData[, -length(names(trainData))])
@@ -120,7 +117,7 @@ treeModel <- rpart(classe ~ ., data=trainData, method="class")
 prp(treeModel) # fast plot
 ```
 
-##Coursera provided code for submission
+## Coursera code for submission
 ```{r}
 answers <- result
 pml_write_files <- function(x){
